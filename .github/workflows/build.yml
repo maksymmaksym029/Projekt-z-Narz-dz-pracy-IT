@@ -1,7 +1,11 @@
 name: Build EXE and Upload
 
 on:
-  workflow_dispatch:  # uruchamiany ręcznie z GitHuba
+  workflow_dispatch:    # uruchamianie ręczne z GitHuba
+  push:                 # uruchamianie po pushu na main
+    branches: [main]
+  schedule:             # uruchamianie automatyczne co tydzień (poniedziałek 12:00)
+    - cron: '0 12 * * 1'
 
 jobs:
   build:
@@ -17,14 +21,15 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pyinstaller
+        run: powershell -ExecutionPolicy Bypass -File installResources.ps1
 
-      - name: Build EXE
+      - name: Build EXE with console (e.g. Task7.py)
         run: pyinstaller --onefile Task7.py
 
-      - name: Upload artifact
+      - name: Build GUI EXE (Task9.py with --noconsole)
+        run: pyinstaller --onefile --noconsole Task9.py
+
+      - name: Upload EXE artifacts
         uses: actions/upload-artifact@v4
         with:
           name: exe-build
